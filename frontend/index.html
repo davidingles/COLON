@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es" data-tema="oscuro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Disposición de áreas</title>
+  </head>
+  <body>
+    <header class="barra-superior">
+      <span class="barra-superior__titulo">Disposición de áreas</span>
+      <div class="barra-superior__acciones">
+        <button class="boton-barra" id="boton-tema" type="button" aria-pressed="true">
+          Tema claro
+        </button>
+        <button class="boton-barra" id="boton-restablecer" type="button">
+          Restablecer disposición
+        </button>
+      </div>
+    </header>
+
+    <!-- El envoltorio es la referencia de posición de la disposición y de las
+         capas superpuestas: la de los cruces y la del gesto de dividir y
+         fundir áreas. -->
+    <div class="disposicion-envoltorio" id="envoltorio">
+      <div class="disposicion" id="disposicion"></div>
+      <div class="capa-esquinas" id="capa-esquinas"></div>
+      <div class="capa-esquinas" id="capa-areas"></div>
+    </div>
+
+    <script type="module" src="/src/principal.js"></script>
+  </body>
+</html>

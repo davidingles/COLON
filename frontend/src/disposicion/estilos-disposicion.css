@@ -1,0 +1,286 @@
+/* Estilos de la interfaz de áreas, con tema claro y oscuro. */
+
+:root {
+  --color-fondo: #ffffff;
+  --color-barra: #f3f3f3;
+  --color-superficie: #ffffff;
+  --color-borde: #e5e5e5;
+  --color-divisor: #f0f0f0;
+  --color-divisor-activo: #0078d4;
+  --color-texto: #1f1f1f;
+  --color-texto-suave: #6b6b6b;
+  --color-pestana-inactiva: #e8e8e8;
+  --color-pestana-activa: #ffffff;
+  --color-resalte: rgba(0, 120, 212, 0.35);
+  --color-aviso: #d13438;
+  --color-aviso-suave: rgba(209, 52, 56, 0.12);
+}
+
+[data-tema='oscuro'] {
+  --color-fondo: #1e1e1e;
+  --color-barra: #323233;
+  --color-superficie: #1e1e1e;
+  --color-borde: #2b2b2b;
+  --color-divisor: #2b2b2b;
+  --color-divisor-activo: #0078d4;
+  --color-texto: #cccccc;
+  --color-texto-suave: #8c8c8c;
+  --color-pestana-inactiva: #2d2d2d;
+  --color-pestana-activa: #1e1e1e;
+  --color-resalte: rgba(0, 120, 212, 0.45);
+  --color-aviso: #f1707b;
+  --color-aviso-suave: rgba(241, 112, 123, 0.18);
+}
+
+/* ---------- Armazón de la página ---------- */
+
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  font-size: 14px;
+}
+
+.barra-superior {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 36px;
+  padding: 0 0.75rem;
+  border-bottom: 1px solid var(--color-borde);
+  background-color: var(--color-barra);
+}
+
+.barra-superior__titulo {
+  font-weight: 600;
+}
+
+.barra-superior__acciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.boton-barra {
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 4px;
+  background-color: var(--color-superficie);
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.boton-barra:hover {
+  border-color: var(--color-divisor-activo);
+}
+
+.boton-barra:focus-visible {
+  outline: 2px solid var(--color-divisor-activo);
+  outline-offset: 1px;
+}
+
+/* El envoltorio es la referencia de posición del lienzo y de la capa de
+   esquinas; por eso los dos hijos se colocan en absoluto. */
+.disposicion-envoltorio {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.disposicion {
+  position: absolute;
+  inset: 0;
+}
+
+/* ---------- Capa de esquinas ---------- */
+
+.capa-esquinas {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  /* La capa no intercepta el ratón: solo lo hacen los manejadores. */
+  pointer-events: none;
+}
+
+.esquina {
+  position: absolute;
+  border-radius: 3px;
+  pointer-events: auto;
+  cursor: nwse-resize;
+  touch-action: none;
+  transition: background-color 120ms ease;
+}
+
+.esquina:hover,
+.esquina.esquina--activa {
+  background-color: var(--color-resalte);
+}
+
+/* Golden Layout pone «cursor: move» en todo mientras arrastra; en un arrastre
+   de esquina se prefiere el cursor de redimensión en dos ejes. */
+body.lm_dragging.lm_esquina_arrastrando,
+body.lm_dragging.lm_esquina_arrastrando * {
+  cursor: nwse-resize !important;
+}
+
+/* ---------- Tema de Golden Layout ---------- */
+
+/* El hueco que dejan los divisores se ve con el color de fondo del lienzo. */
+.lm_goldenlayout {
+  background-color: var(--color-divisor);
+}
+
+.lm_content {
+  border: none;
+  background-color: var(--color-superficie);
+}
+
+.lm_splitter {
+  background-color: var(--color-divisor);
+  opacity: 1;
+  transition: background-color 120ms ease;
+}
+
+.lm_splitter:hover,
+.lm_splitter.lm_dragging {
+  background-color: var(--color-divisor-activo);
+  opacity: 1;
+}
+
+.lm_header {
+  background-color: var(--color-barra);
+}
+
+.lm_header .lm_tab {
+  height: 28px;
+  margin: 0;
+  padding: 0 12px;
+  border-right: 1px solid var(--color-borde);
+  background-color: var(--color-pestana-inactiva);
+  box-shadow: none;
+  color: var(--color-texto-suave);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.lm_header .lm_tab.lm_active,
+.lm_header .lm_tab.lm_active.lm_focused {
+  background-color: var(--color-pestana-activa);
+  box-shadow: none;
+  color: var(--color-texto);
+}
+
+.lm_header .lm_tab:hover {
+  background-color: var(--color-pestana-activa);
+  color: var(--color-texto);
+}
+
+.lm_header .lm_tab .lm_title {
+  line-height: 28px;
+}
+
+/* ---------- Contenido de cada área ---------- */
+
+.area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  height: 100%;
+  padding: 0.9rem 1rem;
+  overflow: auto;
+}
+
+.area__titulo {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.area__descripcion {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: 0.85rem;
+}
+
+.area__medida {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Gesto de dividir y fundir áreas ---------- */
+
+/* Esquinas interiores de cada área. Van siempre visibles, como la preferencia
+   «Corner Handles» de Blender. */
+.esquina-area {
+  position: absolute;
+  border: 1px solid var(--color-texto-suave);
+  border-radius: 3px;
+  opacity: 0.6;
+  pointer-events: auto;
+  cursor: move;
+  touch-action: none;
+  transition: opacity 120ms ease, background-color 120ms ease;
+}
+
+.esquina-area:hover {
+  border-color: var(--color-divisor-activo);
+  background-color: var(--color-resalte);
+  opacity: 1;
+}
+
+/* Durante el gesto hay que poder saber sobre qué área está el ratón, así que
+   las capas superpuestas dejan de interceptarlo. */
+body.lm_gesto_areas .esquina,
+body.lm_gesto_areas .esquina-area {
+  pointer-events: none;
+}
+
+body.lm_gesto_areas,
+body.lm_gesto_areas * {
+  cursor: move !important;
+}
+
+/* Línea que muestra dónde va a quedar la división. */
+.guia-division {
+  position: fixed;
+  z-index: 20;
+  width: 2px;
+  height: 2px;
+  margin-top: -1px;
+  margin-left: -1px;
+  background-color: var(--color-divisor-activo);
+  pointer-events: none;
+}
+
+.guia-division[hidden] {
+  display: none;
+}
+
+/* Al fundir: el área que desaparece y la que se queda. La clase se pone tanto
+   en el contenido como en la pila, para poder teñir también la pestaña. */
+.lm_content.area--desaparece {
+  background-color: var(--color-aviso-suave);
+  box-shadow: inset 0 0 0 2px var(--color-aviso);
+}
+
+.lm_stack.area--desaparece > .lm_header {
+  background-color: var(--color-aviso);
+}
+
+.lm_content.area--permanece {
+  box-shadow: inset 0 0 0 2px var(--color-divisor-activo);
+}
+
+.lm_stack.area--permanece > .lm_header {
+  background-color: var(--color-divisor-activo);
+}

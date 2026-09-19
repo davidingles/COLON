@@ -1,0 +1,18 @@
+{
+  "name": "pwa-tareas-03-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Frontend de la aplicación: formulario de contacto y subida de un archivo.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^8.3.0"
+  },
+  "dependencies": {
+    "golden-layout": "2.6.0"
+  }
+}

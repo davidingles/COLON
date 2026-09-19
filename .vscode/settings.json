@@ -1,0 +1,25 @@
+{
+  // Configuración de VS Code específica de este proyecto (ámbito de workspace).
+
+  // Los archivos Markdown se abren siempre con el editor de vista previa
+  // (Markdown Preview) en vez de con el editor de texto. Para editarlos hay que
+  // usar clic derecho en la pestaña > "Reopen Editor With..." > "Text Editor".
+  // Si se quieren incluir otros patrones (por ejemplo "*.markdown"), se añaden
+  // como propiedades adicionales de este mismo objeto.
+  "workbench.editorAssociations": {
+    "*.md": "vscode.markdown.preview.editor"
+  },
+
+  // El "diseño centrado" (Ver > Apariencia > Diseño centrado) coloca el contenido
+  // del editor en una columna central. No existe ningún ajuste que lo active
+  // automáticamente: se activa con el comando `workbench.action.toggleCenteredLayout`
+  // y VS Code recuerda su estado por workspace. Los dos ajustes siguientes solo
+  // controlan cómo se comporta esa columna una vez está activada.
+  //
+  // centeredLayoutAutoResize: si hay más de un grupo de editores abierto, la columna
+  //   centrada se ensancha al máximo; al quedarse un único grupo, recupera su ancho.
+  "workbench.editor.centeredLayoutAutoResize": true,
+  // centeredLayoutFixedWidth: false = márgenes proporcionales al ancho de la ventana.
+  //   true = la columna mantiene un ancho constante (~900 px) al redimensionar.
+  "workbench.editor.centeredLayoutFixedWidth": false
+}
