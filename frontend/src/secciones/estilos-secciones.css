@@ -1,0 +1,259 @@
+/* Estilos del contenido de las secciones: formularios y listas. */
+
+.formulario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.campo {
+  display: flex;
+  flex: 1 1 8rem;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 8rem;
+}
+
+.campo--ancho {
+  flex-basis: 100%;
+}
+
+.campo__etiqueta {
+  color: var(--color-texto-suave);
+  font-size: 0.78rem;
+}
+
+.campo__control {
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 4px;
+  background-color: var(--color-superficie);
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.campo__control:focus-visible {
+  outline: 2px solid var(--color-divisor-activo);
+  outline-offset: 1px;
+}
+
+.campo__control--area {
+  resize: vertical;
+}
+
+.formulario__pie {
+  display: flex;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.boton {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--color-divisor-activo);
+  border-radius: 4px;
+  background-color: var(--color-divisor-activo);
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.boton:hover {
+  filter: brightness(1.15);
+}
+
+.boton:focus-visible {
+  outline: 2px solid var(--color-texto);
+  outline-offset: 1px;
+}
+
+.formulario__aviso {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: 0.82rem;
+}
+
+.formulario__aviso[data-tipo='ok'] {
+  color: var(--color-divisor-activo);
+}
+
+.formulario__aviso[data-tipo='error'] {
+  color: var(--color-aviso);
+}
+
+/* ---------- Ficha de un familiar ---------- */
+
+.familiar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.familiar__seleccionado {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.familiar__detalle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.bloque {
+  flex: 1 1 12rem;
+  min-width: 10rem;
+}
+
+.bloque__titulo {
+  margin: 0 0 0.25rem;
+  color: var(--color-texto-suave);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bloque__lista {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 0.6rem;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.bloque__vacio {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: 0.8rem;
+}
+
+.bloque__lista dt {
+  color: var(--color-texto-suave);
+}
+
+.bloque__lista dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Lista de miembros ---------- */
+
+.miembros {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.miembros__buscador {
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 4px;
+  background-color: var(--color-superficie);
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.miembros__buscador:focus-visible {
+  outline: 2px solid var(--color-divisor-activo);
+  outline-offset: 1px;
+}
+
+.miembros__resumen {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: 0.78rem;
+}
+
+/* Los mensajes de error se distinguen de los informativos. */
+.miembros__resumen[data-tipo='error'],
+.area__descripcion[data-tipo='error'] {
+  color: var(--color-aviso);
+}
+
+.miembros__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ficha {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Miembro elegido: es el que sale en la vista «Familiar». */
+.ficha--seleccionada {
+  border-color: var(--color-divisor-activo);
+  background-color: var(--color-resalte);
+}
+
+.ficha:focus-visible {
+  outline: 2px solid var(--color-divisor-activo);
+  outline-offset: 1px;
+}
+
+.ficha__texto {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.ficha__nombre {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.ficha__detalle,
+.ficha__notas {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: 0.78rem;
+}
+
+.ficha__borrar {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--color-texto-suave);
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  /* Se enseña al pasar el ratón, pero sigue siendo accesible con el teclado. */
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.ficha:hover .ficha__borrar,
+.ficha__borrar:focus-visible {
+  opacity: 1;
+}
+
+.ficha__borrar:hover {
+  color: var(--color-aviso);
+}
+
+.ficha__borrar:focus-visible {
+  outline: 2px solid var(--color-divisor-activo);
+  outline-offset: 1px;
+}

@@ -7,6 +7,7 @@
 import { LayoutConfig } from 'golden-layout';
 
 const CLAVE_DISPOSICION = 'pwa-tareas-03:disposicion';
+const CLAVE_DISPOSICIONES = 'pwa-tareas-03:disposiciones';
 const CLAVE_TEMA = 'pwa-tareas-03:tema';
 
 export const TEMA_CLARO = 'claro';
@@ -75,6 +76,63 @@ export function borrarDisposicion() {
   } catch (error) {
     console.warn('No se ha podido borrar la disposición guardada.', error);
   }
+}
+
+/**
+ * Guarda las configuraciones de áreas personalizadas.
+ *
+ * Cada entrada es `{ nombre, configuracion }`, donde la configuración es lo que
+ * devuelve `saveLayout` en ese momento: estructura, secciones, tamaños y zoom.
+ */
+export function guardarDisposiciones(lista) {
+  try {
+    localStorage.setItem(CLAVE_DISPOSICIONES, JSON.stringify(lista));
+  } catch (error) {
+    console.warn('No se han podido guardar las configuraciones.', error);
+  }
+}
+
+/** Devuelve las configuraciones personalizadas guardadas, ya utilizables. */
+export function leerDisposiciones() {
+  let texto;
+  try {
+    texto = localStorage.getItem(CLAVE_DISPOSICIONES);
+  } catch (error) {
+    console.warn('No se han podido leer las configuraciones guardadas.', error);
+    return [];
+  }
+
+  if (texto === null) {
+    return [];
+  }
+
+  let lista;
+  try {
+    lista = JSON.parse(texto);
+  } catch {
+    return [];
+  }
+
+  if (!Array.isArray(lista)) {
+    return [];
+  }
+
+  return lista
+    .filter(
+      (entrada) =>
+        esObjeto(entrada) &&
+        typeof entrada.nombre === 'string' &&
+        esObjeto(entrada.configuracion)
+    )
+    .map((entrada) => ({
+      nombre: entrada.nombre,
+      configuracion: aConfiguracionCargable(entrada.configuracion)
+    }));
+}
+
+/** Indica si el valor recibido es un objeto plano, no nulo ni un array. */
+function esObjeto(valor) {
+  return valor !== null && typeof valor === 'object' && !Array.isArray(valor);
 }
 
 /** Devuelve el tema guardado, o null si no hay ninguno válido. */

@@ -259,18 +259,14 @@ export function fundirAreas(raiz, idOrigen, idDestino) {
 /** Crea la pila de un área nueva a partir de la pila de otra existente. */
 function crearPila(nuevoIdentificador, pilaModelo, areaModelo, tamano) {
   const id = nuevoIdentificador(PREFIJO_ID_AREA);
-  const numero = id.slice(PREFIJO_ID_AREA.length);
-  const titulo = `Área ${numero}`;
 
+  // La sección y el zoom se heredan del área que se divide, como en Blender: la
+  // nueva muestra lo mismo que aquella de la que sale. Por eso lo único que
+  // cambia es el identificador, que es lo que distingue un área de otra.
   const area = {
     ...areaModelo,
     id,
-    title: titulo,
-    componentState: {
-      id,
-      titulo,
-      descripcion: `Creada al dividir «${areaModelo.title ?? areaModelo.id}»`
-    },
+    componentState: { ...areaModelo.componentState, id },
     size: TAMANO_COMPLETO,
     sizeUnit: UNIDAD_PORCENTAJE
   };

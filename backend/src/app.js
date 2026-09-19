@@ -3,8 +3,10 @@
 const express = require('express');
 
 const { enrutadorSubidas } = require('./rutas/subidas');
+const { enrutadorMiembros } = require('./rutas/miembros');
 const { ErrorSolicitud } = require('./errores/error-solicitud');
 const almacenSubidas = require('./servicios/almacen-subidas');
+const almacenMiembros = require('./servicios/almacen-miembros');
 
 // Códigos de PostgreSQL y de red que significan "no se pudo llegar a los datos".
 // Se responden como 503 para distinguirlos de un fallo de programación.
@@ -29,17 +31,19 @@ function esErrorDeDatos(error) {
  *
  * El almacén de subidas se puede sustituir para probar la API sin base de datos.
  */
-function crearAplicacion({ almacenDeSubidas = almacenSubidas } = {}) {
+function crearAplicacion({ almacenDeSubidas = almacenSubidas, almacenDeMiembros = almacenMiembros } = {}) {
   const aplicacion = express();
 
-  // Los controladores leen el almacén desde aquí, así no dependen de la
+  // Los controladores leen los almacenes desde aquí, así no dependen de la
   // implementación real.
   aplicacion.locals.almacenSubidas = almacenDeSubidas;
+  aplicacion.locals.almacenMiembros = almacenDeMiembros;
 
   // El archivo de la subida lo procesa multer, no este analizador.
   aplicacion.use(express.json({ limit: '1mb' }));
 
   aplicacion.use('/api', enrutadorSubidas);
+  aplicacion.use('/api', enrutadorMiembros);
 
   // Cualquier ruta no registrada responde 404 en JSON.
   aplicacion.use((peticion, respuesta) => {

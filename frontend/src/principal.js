@@ -6,14 +6,17 @@
 
 import 'golden-layout/dist/css/goldenlayout-base.css';
 import './disposicion/estilos-disposicion.css';
+import './secciones/estilos-secciones.css';
 
 import { GoldenLayout } from 'golden-layout';
 
-import { crearConfiguracionInicial, TAMANO_ESQUINA } from './disposicion/configuracion.js';
+import { crearConfiguracionInicial, SECCIONES, TAMANO_ESQUINA } from './disposicion/configuracion.js';
 import { registrarAreas } from './disposicion/areas.js';
 import { crearCapaDeEsquinas } from './disposicion/esquinas.js';
 import { crearGestosDeAreas } from './disposicion/gestos-areas.js';
 import { crearZoomDeAreas } from './disposicion/zoom-areas.js';
+import { crearBarraDeDisposiciones } from './disposicion/disposiciones.js';
+import { cargarMiembros } from './secciones/miembros.js';
 import { dividirArea, fundirAreas, listarAreas } from './disposicion/docking.js';
 import {
   aConfiguracionCargable,
@@ -33,6 +36,7 @@ const envoltorio = document.querySelector('#envoltorio');
 const contenedorDisposicion = document.querySelector('#disposicion');
 const capaEsquinas = document.querySelector('#capa-esquinas');
 const capaAreas = document.querySelector('#capa-areas');
+const zonaDisposiciones = document.querySelector('#disposiciones');
 const botonRestablecer = document.querySelector('#boton-restablecer');
 const botonTema = document.querySelector('#boton-tema');
 
@@ -42,7 +46,7 @@ const disposicion = new GoldenLayout(contenedorDisposicion);
 // disposición se recoloque cuando cambie el tamaño de su contenedor.
 disposicion.resizeWithContainerAutomatically = true;
 
-registrarAreas(disposicion);
+registrarAreas(disposicion, () => guardarDisposicionConRetardo());
 cargarDisposicion();
 
 const capa = crearCapaDeEsquinas({
@@ -72,6 +76,24 @@ const zoom = crearZoomDeAreas({
 });
 zoom.iniciar();
 
+const configuraciones = crearBarraDeDisposiciones({
+  contenedor: zonaDisposiciones,
+  disposicion,
+  alAplicar: (configuracion) => {
+    try {
+      disposicion.loadLayout(aConfiguracionCargable(configuracion));
+      guardarDisposicionConRetardo();
+    } catch (error) {
+      console.error('No se ha podido aplicar la configuración elegida.', error);
+    }
+  }
+});
+configuraciones.iniciar();
+
+// Los miembros viven en la base de datos: se piden una vez al arrancar y las
+// vistas se enteran por los avisos de `miembros.js`.
+cargarMiembros();
+
 aplicarTema(leerTema() ?? TEMA_POR_DEFECTO);
 
 // --- Disposición ---
@@ -81,7 +103,7 @@ aplicarTema(leerTema() ?? TEMA_POR_DEFECTO);
  */
 function cargarDisposicion() {
   const guardada = leerDisposicion();
-  if (guardada === null || !tieneAreasIdentificadas(guardada)) {
+  if (guardada === null || !esDisposicionUtilizable(guardada)) {
     borrarDisposicion();
     disposicion.loadLayout(crearConfiguracionInicial());
     return;
@@ -99,12 +121,14 @@ function cargarDisposicion() {
 }
 
 /**
- * Comprueba que la disposición guardada identifique todas sus áreas.
+ * Comprueba que la disposición guardada se pueda usar tal cual.
  *
- * Las primeras versiones no guardaban identificadores, y sin ellos no se puede
- * localizar un área para dividirla ni para fundirla.
+ * Hacen falta dos cosas en cada área: identificador (para poder dividirla y
+ * fundirla) y una sección válida (para saber qué muestra). Las disposiciones
+ * guardadas por versiones anteriores no tienen ninguna de las dos, así que se
+ * descartan en vez de dejar las áreas con valores inventados.
  */
-function tieneAreasIdentificadas(configuracion) {
+function esDisposicionUtilizable(configuracion) {
   if (configuracion.root === undefined) {
     return false;
   }
@@ -112,7 +136,21 @@ function tieneAreasIdentificadas(configuracion) {
   const areas = listarAreas(configuracion.root);
   return (
     areas.length > 0 &&
-    areas.every((area) => typeof area.id === 'string' && area.id !== '')
+    areas.every((area) => {
+      const estado = area.componentState;
+
+      return (
+        typeof area.id === 'string' &&
+        area.id !== '' &&
+        estado !== null &&
+        typeof estado === 'object' &&
+        // Las disposiciones del formato anterior guardaban `titulo` y
+        // `descripcion` dentro del estado. Esos campos ya no se usan y delatan
+        // que la disposición es vieja, aunque tenga sección.
+        estado.titulo === undefined &&
+        SECCIONES.some((seccion) => seccion.id === estado.seccion)
+      );
+    })
   );
 }
 

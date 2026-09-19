@@ -1,6 +1,9 @@
 /* Estilos de la interfaz de áreas, con tema claro y oscuro. */
 
 :root {
+  /* Hace que los controles nativos (el desplegable de sección, las barras de
+     desplazamiento) se dibujen en claro o en oscuro según el tema. */
+  color-scheme: light;
   --color-fondo: #ffffff;
   --color-barra: #f3f3f3;
   --color-superficie: #ffffff;
@@ -17,6 +20,7 @@
 }
 
 [data-tema='oscuro'] {
+  color-scheme: dark;
   --color-fondo: #1e1e1e;
   --color-barra: #323233;
   --color-superficie: #1e1e1e;
@@ -60,6 +64,92 @@ body {
 
 .barra-superior__titulo {
   font-weight: 600;
+}
+
+/* Título y botones de configuración, a la izquierda de la cabecera. */
+.barra-superior__zona {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.barra-superior__disposiciones {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.boton-disposicion {
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 4px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto-suave);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.boton-disposicion:hover {
+  border-color: var(--color-divisor-activo);
+  color: var(--color-texto);
+}
+
+.boton-disposicion:focus-visible {
+  outline: 2px solid var(--color-divisor-activo);
+  outline-offset: 1px;
+}
+
+.boton-disposicion--anadir {
+  padding: 0.15rem 0.45rem;
+  font-weight: 600;
+}
+
+/* Una configuración guardada: el botón que la aplica y el que la borra, pegados
+   para que se lean como una sola pieza. */
+.disposicion {
+  display: inline-flex;
+  align-items: center;
+}
+
+.disposicion .boton-disposicion {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.disposicion__borrar {
+  width: 18px;
+  height: 21px;
+  padding: 0;
+  border: 1px solid var(--color-borde);
+  border-left: none;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto-suave);
+  font: inherit;
+  font-size: 0.8rem;
+  line-height: 1;
+  cursor: pointer;
+  /* Se enseña al pasar el ratón, pero sigue siendo accesible con el teclado. */
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.disposicion:hover .disposicion__borrar,
+.disposicion__borrar:focus-visible {
+  opacity: 1;
+}
+
+.disposicion__borrar:hover {
+  border-color: var(--color-aviso);
+  color: var(--color-aviso);
+}
+
+.disposicion__borrar:focus-visible {
+  outline: 2px solid var(--color-divisor-activo);
+  outline-offset: 1px;
 }
 
 .barra-superior__acciones {
@@ -247,6 +337,76 @@ body.lm_dragging.lm_esquina_arrastrando * {
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
+}
+
+/* Barra con el desplegable de sección, como el selector de editor de Blender. */
+.area__barra {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.area__selector {
+  max-width: 100%;
+  padding: 0.15rem 0.35rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 4px;
+  background-color: var(--color-superficie);
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.area__selector:hover {
+  border-color: var(--color-divisor-activo);
+}
+
+.area__selector:focus-visible {
+  outline: 2px solid var(--color-divisor-activo);
+  outline-offset: 1px;
+}
+
+/* Menú con las vistas de la sección, dentro del área. */
+.area__menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.area__menu-boton {
+  padding: 0.15rem 0.5rem;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--color-texto-suave);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.area__menu-boton:hover {
+  background-color: var(--color-pestana-inactiva);
+  color: var(--color-texto);
+}
+
+.area__menu-boton--activo {
+  background-color: var(--color-pestana-activa);
+  color: var(--color-texto);
+  font-weight: 600;
+}
+
+.area__menu-boton:focus-visible {
+  outline: 2px solid var(--color-divisor-activo);
+  outline-offset: 1px;
+}
+
+/* Hueco donde se pinta la vista. Con `min-height: 0` puede encogerse sin
+   desbordar el área, que es lo que permite desplazarla cuando hay zoom. */
+.area__vista {
+  min-height: 0;
 }
 
 .area__descripcion {
