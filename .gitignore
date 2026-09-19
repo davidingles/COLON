@@ -1,0 +1,30 @@
+# Reglas de ignorado comunes a todo el proyecto.
+#
+# Cada parte tiene además el suyo propio (`frontend/.gitignore` y
+# `backend/.gitignore`). Este archivo cubre lo que afecta a la raíz y sirve de
+# red de seguridad si alguno de los otros desaparece.
+#
+# Ojo con dos cosas que NO se ignoran a propósito:
+#
+# - `.vscode/`: el archivo `.vscode/settings.json` está versionado a propósito,
+#   porque define ajustes compartidos del proyecto.
+# - `.env.example`: es la plantilla que sí se versiona. Por eso la regla de
+#   abajo es `.env` y no `.env*`, que también taparía la plantilla.
+
+# Dependencias instaladas. En un patrón sin barra, la regla vale para cualquier
+# nivel, así que cubre frontend/ y backend/ a la vez.
+node_modules/
+
+# Artefactos de compilación.
+dist/
+
+# Credenciales. Nunca deben llegar al repositorio.
+.env
+
+# Archivos subidos en tiempo de ejecución.
+subidas/
+
+# Ruido del sistema operativo y del editor.
+Thumbs.db
+Desktop.ini
+*.log

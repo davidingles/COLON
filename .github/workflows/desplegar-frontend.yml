@@ -1,0 +1,83 @@
+# Publica en GitHub Pages la compilación del frontend.
+#
+# Este archivo tiene que estar en la RAÍZ del repositorio, dentro de
+# `.github/workflows/`. GitHub solo lee los flujos de trabajo de esa carpeta, así
+# que no sirve ponerlo dentro de `frontend/`.
+#
+# El repositorio es un monorepo (backend, database y frontend), pero a Pages se
+# sube ÚNICAMENTE `frontend/dist`. El sitio queda publicado en
+# https://davidingles.github.io/COLON/ y por eso la compilación necesita una
+# ruta base: sin ella Vite escribe las rutas de los recursos desde la raíz del
+# dominio, no las encuentra y la página se ve en blanco.
+
+name: Desplegar frontend
+
+on:
+  push:
+    branches: [master]
+  # Permite lanzarlo a mano desde la pestaña «Actions» sin tocar el código.
+  workflow_dispatch:
+
+# Permisos que necesitan las acciones de Pages. `contents: read` basta para
+# descargar el repositorio; los otros dos los exige la publicación.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Si se empujan dos cambios seguidos, se espera a que termine el primero en vez
+# de publicar dos versiones a la vez.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  compilar:
+    name: Compilar el frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v7
+
+      - name: Preparar Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Se pone antes de compilar para que, si Pages no estuviese activado, el
+      # flujo avise enseguida en vez de después de haber construido el sitio.
+      - name: Configurar Pages
+        uses: actions/configure-pages@v6
+
+      - name: Instalar las dependencias del frontend
+        working-directory: frontend
+        run: npm ci
+
+      # El sitio de un repositorio de proyecto se sirve en /<repositorio>/, no en
+      # la raíz del dominio. La ruta se calcula a partir del nombre real del
+      # repositorio para no tener que cambiarla a mano si algún día se renombra.
+      - name: Calcular la ruta base del sitio
+        run: echo "RUTA_BASE=/${GITHUB_REPOSITORY#*/}/" >> "$GITHUB_ENV"
+
+      - name: Compilar el frontend
+        working-directory: frontend
+        run: npm run build -- --base="$RUTA_BASE"
+
+      - name: Preparar el paquete del sitio
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: frontend/dist
+
+  desplegar:
+    name: Publicar en GitHub Pages
+    needs: compilar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publicar.outputs.page_url }}
+    steps:
+      - name: Publicar
+        id: publicar
+        uses: actions/deploy-pages@v5
