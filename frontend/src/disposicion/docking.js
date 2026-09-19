@@ -131,8 +131,9 @@ export function buscarArea(raiz, idArea) {
  * Divide el área indicada en dos.
  *
  * `orientacion` es cómo queda la línea que las separa y `lado` en qué mitad va
- * el área nueva. `proporcion` es la parte que se queda el área original, así
- * que 0,5 reparte a medias.
+ * el área nueva. `proporcion` es la parte del área que queda ANTES del punto
+ * donde se ha soltado: la de arriba al apilar y la de la izquierda al poner las
+ * áreas lado a lado.
  *
  * Devuelve una raíz nueva (que puede ser la misma, ya modificada), o null si no
  * había nada que dividir.
@@ -147,14 +148,20 @@ export function dividirArea(raiz, idArea, orientacion, lado, proporcion) {
   const nuevoIdentificador = crearAsignadorDeIdentificadores(raiz);
 
   const tipoDeGrupo = orientacion === ORIENTACION_VERTICAL ? 'row' : 'column';
-  const parteDelOrigen = limitarProporcion(proporcion);
   const tamanoOriginal = encontrado.pila.size;
+
+  // El trozo de antes del punto se lo queda el área nueva si va delante, y el
+  // área que se divide si va detrás. Equivocar esto refleja la línea: sale al
+  // otro lado del punto donde se soltó.
+  const parteInicial = limitarProporcion(proporcion);
+  const vaDelante = lado === LADO_ANTES;
+  const parteDeLaNueva = vaDelante ? parteInicial : 1 - parteInicial;
 
   const nuevaPila = crearPila(
     nuevoIdentificador,
     encontrado.pila,
     encontrado.area,
-    tamanoOriginal * (1 - parteDelOrigen)
+    tamanoOriginal * parteDeLaNueva
   );
 
   const grupo = encontrado.grupo;
@@ -162,10 +169,10 @@ export function dividirArea(raiz, idArea, orientacion, lado, proporcion) {
   if (grupo !== null && grupo.type === tipoDeGrupo) {
     // El grupo ya divide en la orientación pedida: basta con dejar la pila
     // nueva al lado de la que se divide y repartir el tamaño.
-    const posicion = lado === LADO_ANTES ? encontrado.indice : encontrado.indice + 1;
+    const posicion = vaDelante ? encontrado.indice : encontrado.indice + 1;
     grupo.content.splice(posicion, 0, nuevaPila);
 
-    encontrado.pila.size = tamanoOriginal * parteDelOrigen;
+    encontrado.pila.size = tamanoOriginal - nuevaPila.size;
     encontrado.pila.sizeUnit = UNIDAD_PORCENTAJE;
     return raiz;
   }
@@ -173,13 +180,12 @@ export function dividirArea(raiz, idArea, orientacion, lado, proporcion) {
   // Hay que envolver la pila en un grupo nuevo con la orientación pedida. El
   // grupo hereda el sitio y el tamaño de la pila, y dentro las dos mitades se
   // reparten el espacio.
-  encontrado.pila.size = parteDelOrigen * TAMANO_COMPLETO;
-  encontrado.pila.sizeUnit = UNIDAD_PORCENTAJE;
-  nuevaPila.size = (1 - parteDelOrigen) * TAMANO_COMPLETO;
+  nuevaPila.size = parteDeLaNueva * TAMANO_COMPLETO;
   nuevaPila.sizeUnit = UNIDAD_PORCENTAJE;
+  encontrado.pila.size = (1 - parteDeLaNueva) * TAMANO_COMPLETO;
+  encontrado.pila.sizeUnit = UNIDAD_PORCENTAJE;
 
-  const contenido =
-    lado === LADO_ANTES ? [nuevaPila, encontrado.pila] : [encontrado.pila, nuevaPila];
+  const contenido = vaDelante ? [nuevaPila, encontrado.pila] : [encontrado.pila, nuevaPila];
 
   const grupoNuevo = crearGrupo(
     nuevoIdentificador,
@@ -194,18 +200,27 @@ export function dividirArea(raiz, idArea, orientacion, lado, proporcion) {
 }
 
 /**
- * Quita el área indicada y reparte su hueco.
+ * Funde dos áreas.
  *
- * Es la operación que hay detrás de fundir dos áreas: la que se suelta
- * desaparece y el espacio se reparte entre las que quedan. Cuando un grupo se
- * queda con un solo hijo, el grupo se sustituye por ese hijo, que hereda su
- * tamaño; así el árbol no acumula grupos de un solo elemento.
+ * Desaparece el área de destino y el área de origen se queda con su sitio, de
+ * modo que ocupa lo que ocupaban las dos. Cuando un grupo se queda con un solo
+ * hijo, el grupo se sustituye por ese hijo, que hereda su tamaño; así el árbol
+ * no acumula grupos de un solo elemento.
+ *
+ * Sumar el hueco al área de origen es imprescindible cuando el grupo tiene más
+ * de dos áreas: si solo se quitara, la proporción del grupo dejaría de sumar 100
+ * y Golden Layout repartiría el hueco entre TODAS las que quedan, con lo que
+ * crecerían también las que no participan en la fusión.
+ *
+ * Si las dos áreas no están en el mismo grupo (dos que se tocan en vertical pero
+ * viven en columnas distintas) no hay dónde sumar el hueco, así que la
+ * disposición lo reparte como puede.
  *
  * Devuelve una raíz nueva (que puede ser la misma, ya modificada), o null si no
- * había nada que quitar o si era la última área que quedaba.
+ * había nada que fundir o si el destino era la última área que quedaba.
  */
-export function quitarArea(raiz, idArea) {
-  const encontrado = buscarArea(raiz, idArea);
+export function fundirAreas(raiz, idOrigen, idDestino) {
+  const encontrado = buscarArea(raiz, idDestino);
   if (encontrado === null || encontrado.grupo === null) {
     return null;
   }
@@ -217,7 +232,15 @@ export function quitarArea(raiz, idArea) {
 
   const situaciones = indexarSituaciones(raiz);
   const grupo = encontrado.grupo;
+  const tamanoLiberado = encontrado.pila.size;
+
   grupo.content.splice(encontrado.indice, 1);
+
+  const origen = buscarArea(raiz, idOrigen);
+  if (origen !== null && origen.pila !== null && origen.grupo === grupo) {
+    origen.pila.size += tamanoLiberado;
+    origen.pila.sizeUnit = UNIDAD_PORCENTAJE;
+  }
 
   if (grupo.content.length === 0) {
     return quitarNodo(raiz, situaciones, grupo);

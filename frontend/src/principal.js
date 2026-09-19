@@ -13,7 +13,7 @@ import { crearConfiguracionInicial, TAMANO_ESQUINA } from './disposicion/configu
 import { registrarAreas } from './disposicion/areas.js';
 import { crearCapaDeEsquinas } from './disposicion/esquinas.js';
 import { crearGestosDeAreas } from './disposicion/gestos-areas.js';
-import { dividirArea, listarAreas, quitarArea } from './disposicion/docking.js';
+import { dividirArea, fundirAreas, listarAreas } from './disposicion/docking.js';
 import {
   aConfiguracionCargable,
   borrarDisposicion,
@@ -59,7 +59,7 @@ const gestos = crearGestosDeAreas({
   alDividir: (idArea, orientacion, lado, proporcion) =>
     aplicarCambioDeArbol((raiz) => dividirArea(raiz, idArea, orientacion, lado, proporcion)),
   alFundir: (idOrigen, idDestino) =>
-    aplicarCambioDeArbol((raiz) => quitarArea(raiz, idDestino))
+    aplicarCambioDeArbol((raiz) => fundirAreas(raiz, idOrigen, idDestino))
 });
 gestos.iniciar();
 

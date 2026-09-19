@@ -23,6 +23,21 @@ export const TAMANO_ESQUINA_AREA = 12;
 // cuadrado del cruce, que sigue siendo el que redimensiona en dos ejes.
 export const SEPARACION_ESQUINA_AREA = 12;
 
+// Tamaños mínimos de un área, en píxeles. Los usa Golden Layout para no dejar
+// ningún área por debajo, y el gesto de dividir los respeta igual: si la guía
+// pidiera una mitad más pequeña, la librería recolocaría la línea al soltar.
+//
+// Los dos se quedaron en 60 px a propósito, en vez de en los 120 y 90 iniciales.
+// Con los valores altos la división de las áreas pequeñas apenas se podía mover:
+// la primera columna (157 px) no admitía dos mitades de 120, y al apilar solo se
+// podía soltar entre el 46 % y el 54 % del alto. El precio es que ahora se pueden
+// dejar áreas muy estrechas.
+//
+// Al apilar hay que tener en cuenta que el área incluye su pestaña: con 60 px de
+// alto, quedan 30 para la pestaña y 30 de contenido.
+export const MINIMO_ANCHO_AREA = 60;
+export const MINIMO_ALTO_AREA = 60;
+
 // Medidas de la disposición, según la API pública de Golden Layout.
 //
 // borderWidth es el grosor real del divisor y borderGrabWidth la zona sensible
@@ -32,8 +47,8 @@ export const DIMENSIONES = {
   borderWidth: 6,
   borderGrabWidth: 14,
   headerHeight: 30,
-  defaultMinItemWidth: '120px',
-  defaultMinItemHeight: '90px'
+  defaultMinItemWidth: `${MINIMO_ANCHO_AREA}px`,
+  defaultMinItemHeight: `${MINIMO_ALTO_AREA}px`
 };
 
 // Opciones generales de comportamiento.

@@ -21,7 +21,7 @@ import {
   ORIENTACION_HORIZONTAL,
   ORIENTACION_VERTICAL
 } from './docking.js';
-import { SEPARACION_ESQUINA_AREA, TAMANO_ESQUINA_AREA } from './configuracion.js';
+import { MINIMO_ALTO_AREA, MINIMO_ANCHO_AREA, SEPARACION_ESQUINA_AREA, TAMANO_ESQUINA_AREA } from './configuracion.js';
 
 // Recorrido mínimo del ratón antes de decidir si el gesto divide o funde.
 const MINIMO_DESPLAZAMIENTO = 6;
@@ -82,13 +82,21 @@ export function crearGestosDeAreas({ envoltorio, capa, disposicion, alDividir, a
         continue;
       }
 
-      const rect = contenido.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) {
+      const rectContenido = contenido.getBoundingClientRect();
+      if (rectContenido.width === 0 || rectContenido.height === 0) {
         continue;
       }
 
-      for (const esquina of esquinasDelArea(rect, rectEnvoltorio)) {
-        capa.appendChild(crearEsquina(idArea, rect, esquina, rectEnvoltorio));
+      // Hacen falta los dos rectángulos. Las esquinas se colocan dentro del
+      // contenido, para no caer sobre la pestaña, pero el reparto se calcula
+      // sobre el área completa: la pestaña ocupa sitio y, si no se cuenta, la
+      // línea acaba por encima del ratón.
+      const pila = contenido.closest('.lm_stack');
+      const rectArea = (pila ?? contenido).getBoundingClientRect();
+      const rects = { contenido: rectContenido, area: rectArea };
+
+      for (const esquina of esquinasDelArea(rectContenido, rectEnvoltorio)) {
+        capa.appendChild(crearEsquina(idArea, rects, esquina, rectEnvoltorio));
       }
     }
   }
@@ -132,7 +140,7 @@ export function crearGestosDeAreas({ envoltorio, capa, disposicion, alDividir, a
   }
 
   /** Crea la esquina que arranca el gesto. */
-  function crearEsquina(idArea, rect, esquina, rectEnvoltorio) {
+  function crearEsquina(idArea, rects, esquina, rectEnvoltorio) {
     const elemento = document.createElement('div');
     elemento.className = 'esquina-area';
     elemento.title = 'Arrastra hacia dentro para dividir y hacia otra área para fundir';
@@ -142,7 +150,7 @@ export function crearGestosDeAreas({ envoltorio, capa, disposicion, alDividir, a
     elemento.style.top = `${esquina.y - rectEnvoltorio.top - TAMANO_ESQUINA_AREA / 2}px`;
 
     elemento.addEventListener('pointerdown', (evento) => {
-      iniciarGesto(evento, idArea, rect);
+      iniciarGesto(evento, idArea, rects);
     });
 
     return elemento;
@@ -151,7 +159,7 @@ export function crearGestosDeAreas({ envoltorio, capa, disposicion, alDividir, a
   // --- Gesto en curso ---
 
   /** Arranca el gesto y se queda a la espera de saber hacia dónde va. */
-  function iniciarGesto(evento, idArea, rect) {
+  function iniciarGesto(evento, idArea, rects) {
     if (evento.button !== 0) {
       return;
     }
@@ -161,7 +169,7 @@ export function crearGestosDeAreas({ envoltorio, capa, disposicion, alDividir, a
 
     gesto = {
       idArea,
-      rect,
+      rects,
       xInicial: evento.clientX,
       yInicial: evento.clientY,
       modo: null,
@@ -187,8 +195,6 @@ export function crearGestosDeAreas({ envoltorio, capa, disposicion, alDividir, a
 
     const recorridoX = evento.clientX - gesto.xInicial;
     const recorridoY = evento.clientY - gesto.yInicial;
-    const recorrido =
-      Math.abs(recorridoX) > Math.abs(recorridoY) ? recorridoX : recorridoY;
 
     // Hasta que el ratón no se mueve lo suficiente no se sabe qué va a pasar:
     // así un clic suelto en la esquina no cambia nada.
@@ -203,7 +209,7 @@ export function crearGestosDeAreas({ envoltorio, capa, disposicion, alDividir, a
       return;
     }
 
-    if (contiene(gesto.rect, evento.clientX, evento.clientY)) {
+    if (contiene(gesto.rects.area, evento.clientX, evento.clientY)) {
       marcarDivision(recorridoX, recorridoY, evento);
       return;
     }
@@ -240,17 +246,21 @@ export function crearGestosDeAreas({ envoltorio, capa, disposicion, alDividir, a
 
     if (vertical) {
       gesto.lado = recorridoX >= 0 ? LADO_DESPUES : LADO_ANTES;
+      // Se reparte a lo ancho: la pestaña es una barra horizontal y no ocupa
+      // anchura, así que no hay margen que descontar.
       gesto.proporcion = proporcionDePosicion(
-        gesto.rect.left,
-        gesto.rect.width,
-        evento.clientX
+        gesto.rects.area.left,
+        gesto.rects.area.width,
+        evento.clientX,
+        MINIMO_ANCHO_AREA
       );
     } else {
       gesto.lado = recorridoY >= 0 ? LADO_DESPUES : LADO_ANTES;
       gesto.proporcion = proporcionDePosicion(
-        gesto.rect.top,
-        gesto.rect.height,
-        evento.clientY
+        gesto.rects.area.top,
+        gesto.rects.area.height,
+        evento.clientY,
+        MINIMO_ALTO_AREA
       );
     }
 
@@ -258,7 +268,13 @@ export function crearGestosDeAreas({ envoltorio, capa, disposicion, alDividir, a
     mostrarGuia();
   }
 
-  /** Coloca la guía justo donde quedará la línea de la división. */
+  /**
+   * Coloca la guía justo donde quedará la línea de la división.
+   *
+   * La posición sale de la proporción ya recortada, no del ratón, para que la
+   * guía y el resultado coincidan siempre: si el recorte entra en juego, la
+   * línea se detiene y deja de seguir al puntero.
+   */
   function mostrarGuia() {
     if (guia === null) {
       guia = document.createElement('div');
@@ -266,18 +282,18 @@ export function crearGestosDeAreas({ envoltorio, capa, disposicion, alDividir, a
       document.body.appendChild(guia);
     }
 
-    const rect = gesto.rect;
+    const { area, contenido } = gesto.rects;
     guia.hidden = false;
 
     if (gesto.orientacion === ORIENTACION_VERTICAL) {
-      guia.style.left = `${rect.left + gesto.proporcion * rect.width}px`;
-      guia.style.top = `${rect.top}px`;
+      guia.style.left = `${area.left + gesto.proporcion * area.width}px`;
+      guia.style.top = `${contenido.top}px`;
       guia.style.width = '';
-      guia.style.height = `${rect.height}px`;
+      guia.style.height = `${contenido.height}px`;
     } else {
-      guia.style.left = `${rect.left}px`;
-      guia.style.top = `${rect.top + gesto.proporcion * rect.height}px`;
-      guia.style.width = `${rect.width}px`;
+      guia.style.left = `${contenido.left}px`;
+      guia.style.top = `${area.top + gesto.proporcion * area.height}px`;
+      guia.style.width = `${contenido.width}px`;
       guia.style.height = '';
     }
   }
@@ -459,10 +475,21 @@ function contiene(rect, x, y) {
   return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
 }
 
-/** Parte del rectángulo que queda antes de una posición, dentro de un margen. */
-function proporcionDePosicion(inicio, tamano, posicion) {
+/**
+ * Parte del área que queda antes de una posición.
+ *
+ * `minimo` es el tamaño mínimo de área que exige Golden Layout en ese eje. El
+ * gesto lo respeta para que la línea no acabe saltando al soltar: si pidiéramos
+ * una mitad más pequeña, la librería la agrandaría quitándole sitio a las áreas
+ * vecinas. Cuando el área es tan pequeña que no caben dos mitades mínimas, se
+ * reparte a medias, que es lo que termina haciendo la librería de todos modos.
+ */
+function proporcionDePosicion(inicio, tamano, posicion, minimo) {
   if (tamano <= 0) {
     return 0.5;
   }
-  return limitarProporcion((posicion - inicio) / tamano);
+
+  const minimoProporcion = Math.min(0.5, minimo / tamano);
+  const bruta = (posicion - inicio) / tamano;
+  return limitarProporcion(Math.min(1 - minimoProporcion, Math.max(minimoProporcion, bruta)));
 }
