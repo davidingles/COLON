@@ -9,11 +9,47 @@
     <header class="barra-superior">
       <span class="barra-superior__titulo">Disposición de áreas</span>
       <div class="barra-superior__acciones">
-        <button class="boton-barra" id="boton-tema" type="button" aria-pressed="true">
-          Tema claro
-        </button>
         <button class="boton-barra" id="boton-restablecer" type="button">
           Restablecer disposición
+        </button>
+
+        <!-- Botón de tema. Enseña el tema AL QUE SE PASA, así que en oscuro
+             muestra el sol. El icono lo elige el CSS a partir de `data-tema` y
+             el texto de ayuda lo pone `principal.js`. -->
+        <button
+          class="boton-icono"
+          id="boton-tema"
+          type="button"
+          aria-pressed="true"
+          aria-label="Cambiar a tema claro"
+          title="Cambiar a tema claro"
+        >
+          <svg
+            class="boton-icono__dibujo boton-icono__sol"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M4.9 4.9l1.5 1.5M17.6 17.6l1.5 1.5M2 12h2M20 12h2M4.9 19.1l1.5-1.5M17.6 6.4l1.5-1.5"
+            />
+          </svg>
+          <svg
+            class="boton-icono__dibujo boton-icono__luna"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+          </svg>
         </button>
       </div>
     </header>

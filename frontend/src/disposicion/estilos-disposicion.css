@@ -87,6 +87,47 @@ body {
   outline-offset: 1px;
 }
 
+/* Botón discreto de icono (el del tema). Sin borde ni fondo hasta que se pasa
+   el ratón por encima, y un poco separado del botón de texto de al lado. */
+.boton-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: 0.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--color-texto-suave);
+  cursor: pointer;
+}
+
+.boton-icono:hover {
+  background-color: var(--color-pestana-inactiva);
+  color: var(--color-texto);
+}
+
+.boton-icono:focus-visible {
+  outline: 2px solid var(--color-divisor-activo);
+  outline-offset: 1px;
+}
+
+.boton-icono__dibujo {
+  width: 16px;
+  height: 16px;
+}
+
+/* El icono enseña el tema al que se pasa, así que en oscuro se ve el sol. */
+[data-tema='oscuro'] .boton-icono__luna {
+  display: none;
+}
+
+[data-tema='claro'] .boton-icono__sol {
+  display: none;
+}
+
 /* El envoltorio es la referencia de posición del lienzo y de la capa de
    esquinas; por eso los dos hijos se colocan en absoluto. */
 .disposicion-envoltorio {
@@ -189,13 +230,17 @@ body.lm_dragging.lm_esquina_arrastrando * {
 
 /* ---------- Contenido de cada área ---------- */
 
+/* El contenido de un área puede llevar zoom, así que si al agrandarlo no cabe
+   hay que poder desplazarlo. Golden Layout lo recorta por defecto. */
+.lm_content {
+  overflow: auto;
+}
+
 .area {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  height: 100%;
   padding: 0.9rem 1rem;
-  overflow: auto;
 }
 
 .area__titulo {

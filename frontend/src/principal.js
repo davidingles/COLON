@@ -13,6 +13,7 @@ import { crearConfiguracionInicial, TAMANO_ESQUINA } from './disposicion/configu
 import { registrarAreas } from './disposicion/areas.js';
 import { crearCapaDeEsquinas } from './disposicion/esquinas.js';
 import { crearGestosDeAreas } from './disposicion/gestos-areas.js';
+import { crearZoomDeAreas } from './disposicion/zoom-areas.js';
 import { dividirArea, fundirAreas, listarAreas } from './disposicion/docking.js';
 import {
   aConfiguracionCargable,
@@ -62,6 +63,14 @@ const gestos = crearGestosDeAreas({
     aplicarCambioDeArbol((raiz) => fundirAreas(raiz, idOrigen, idDestino))
 });
 gestos.iniciar();
+
+const zoom = crearZoomDeAreas({
+  envoltorio,
+  // Guardar la disposición es también guardar el zoom: viaja dentro del estado
+  // de cada área.
+  alCambiar: () => guardarDisposicionConRetardo()
+});
+zoom.iniciar();
 
 aplicarTema(leerTema() ?? TEMA_POR_DEFECTO);
 
@@ -164,9 +173,15 @@ botonRestablecer.addEventListener('click', () => {
 function aplicarTema(tema) {
   document.documentElement.dataset.tema = tema;
 
+  // El botón no lleva texto: su icono y su ayuda dicen a qué tema se pasa. El
+  // icono que toca lo enseña el CSS según el tema, aquí solo va el texto de
+  // ayuda para quien navegue con lector de pantalla o vea el «tooltip».
   const esOscuro = tema === TEMA_OSCURO;
-  botonTema.textContent = esOscuro ? 'Tema claro' : 'Tema oscuro';
+  const accion = esOscuro ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
+
   botonTema.setAttribute('aria-pressed', String(esOscuro));
+  botonTema.setAttribute('aria-label', accion);
+  botonTema.title = accion;
 }
 
 botonTema.addEventListener('click', () => {

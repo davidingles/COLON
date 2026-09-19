@@ -1,6 +1,16 @@
 // Componente de relleno que da contenido a cada área de la disposición.
 
-import { TIPO_COMPONENTE_AREA } from './configuracion.js';
+import {
+  PASO_ZOOM,
+  TIPO_COMPONENTE_AREA,
+  ZOOM_MAXIMO,
+  ZOOM_MINIMO,
+  ZOOM_POR_DEFECTO
+} from './configuracion.js';
+
+// Aviso que se lanza en el contenido del área cuando cambia su zoom, para que el
+// propio componente vuelva a escribir su línea de medidas.
+const EVENTO_ESCALA = 'escala-cambiada';
 
 /**
  * Registra en la disposición el tipo de componente usado por las áreas.
@@ -34,6 +44,8 @@ function crearComponenteArea(contenedor, estado) {
   // está colgado de su pila.
   contenedor.element.dataset.areaId = id;
 
+  aplicarEscala(elemento, limitarEscala(datos.escala));
+
   const encabezado = document.createElement('h2');
   encabezado.className = 'area__titulo';
   encabezado.textContent = titulo;
@@ -43,23 +55,68 @@ function crearComponenteArea(contenedor, estado) {
   texto.textContent = descripcion;
 
   // Medida en vivo del área: sirve para comprobar que el arrastre de los
-  // divisores y de las esquinas cambia de verdad los tamaños.
+  // divisores y de las esquinas cambia de verdad los tamaños. Cuando el
+  // contenido tiene zoom, se añade el porcentaje para que se vea de un vistazo.
   const medida = document.createElement('p');
   medida.className = 'area__medida';
 
   const mostrarMedida = () => {
     const ancho = Math.round(contenedor.width);
     const alto = Math.round(contenedor.height);
-    medida.textContent = `${ancho} × ${alto} px`;
+    const escala = leerEscala(elemento);
+
+    medida.textContent =
+      escala === ZOOM_POR_DEFECTO
+        ? `${ancho} × ${alto} px`
+        : `${ancho} × ${alto} px · ${Math.round(escala * 100)} %`;
   };
 
   mostrarMedida();
   contenedor.on('resize', mostrarMedida);
+  elemento.addEventListener(EVENTO_ESCALA, mostrarMedida);
+
+  // Golden Layout pide aquí el estado del componente cada vez que guarda la
+  // disposición, así que el zoom viaja con el área: sobrevive a recargar la
+  // página y a dividir o fundir.
+  contenedor.stateRequestEvent = () => ({ ...datos, escala: leerEscala(elemento) });
 
   elemento.append(encabezado, texto, medida);
   contenedor.element.appendChild(elemento);
 
   return elemento;
+}
+
+/**
+ * Pone el zoom en el contenido del área.
+ *
+ * Se usa la propiedad `zoom`, que escala todo (tipografías, botones, bordes y
+ * espacios) y además vuelve a maquetar el contenido en el hueco que queda. Con
+ * `transform: scale` no se recolocaría nada y el texto saldría borroso.
+ */
+export function aplicarEscala(elemento, escala) {
+  elemento.dataset.escala = String(escala);
+  elemento.style.zoom = escala === ZOOM_POR_DEFECTO ? '' : String(escala);
+
+  elemento.dispatchEvent(new Event(EVENTO_ESCALA));
+}
+
+/** Devuelve el zoom del contenido del área. */
+export function leerEscala(elemento) {
+  const valor = Number.parseFloat(elemento.dataset.escala ?? '');
+  return Number.isNaN(valor) ? ZOOM_POR_DEFECTO : valor;
+}
+
+/** Deja el zoom dentro de los límites y ajustado al paso de la rueda. */
+export function limitarEscala(valor) {
+  if (typeof valor !== 'number' || Number.isNaN(valor)) {
+    return ZOOM_POR_DEFECTO;
+  }
+
+  const pasos = Math.round(valor / PASO_ZOOM);
+  const ajustado = Math.min(ZOOM_MAXIMO, Math.max(ZOOM_MINIMO, pasos * PASO_ZOOM));
+
+  // Sin redondear, multiplicar el paso deja valores como 1,2000000000000002.
+  return Math.round(ajustado * 100) / 100;
 }
 
 /** Indica si el valor recibido es un objeto plano, no nulo ni un array. */

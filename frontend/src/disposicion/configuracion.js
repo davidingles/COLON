@@ -5,6 +5,12 @@
 // Tipo de componente registrado para rellenar cada área.
 export const TIPO_COMPONENTE_AREA = 'area';
 
+// Límites y paso del zoom del contenido de un área (Ctrl + rueda del ratón).
+export const ZOOM_POR_DEFECTO = 1;
+export const ZOOM_MINIMO = 0.6;
+export const ZOOM_MAXIMO = 2;
+export const PASO_ZOOM = 0.1;
+
 // Prefijo de los identificadores de área. El identificador se guarda en la
 // configuración y en el propio DOM, y es lo que permite localizar un área
 // cuando se divide o se funde.

@@ -104,18 +104,17 @@ export function crearGestosDeAreas({ envoltorio, capa, disposicion, alDividir, a
   /**
    * Calcula las esquinas interiores de un área.
    *
+   * No se pone la de arriba a la izquierda: el título del área está justo ahí y
+   * el cuadradito quedaba encima del texto. Las otras tres bastan, porque lo que
+   * decide si se divide o se funde es hacia dónde se arrastra, no desde qué
+   * esquina se empieza.
+   *
    * Es una esquina interior la que da a otra zona de la disposición: en las del
    * borde exterior no hay nada con lo que fundirse, así que se descartan.
    */
   function esquinasDelArea(rect, rectEnvoltorio) {
     const separacion = SEPARACION_ESQUINA_AREA + TAMANO_ESQUINA_AREA / 2;
     const candidatas = [
-      {
-        x: rect.left + separacion,
-        y: rect.top + separacion,
-        interiorX: rect.left > rectEnvoltorio.left + 1,
-        interiorY: rect.top > rectEnvoltorio.top + 1
-      },
       {
         x: rect.right - separacion,
         y: rect.top + separacion,
